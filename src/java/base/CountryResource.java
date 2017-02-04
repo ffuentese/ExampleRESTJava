@@ -7,6 +7,8 @@ package base;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.security.DeclareRoles;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -25,6 +27,7 @@ import javax.ws.rs.core.Response;
  */
 @Stateless
 @Path("/country")
+@DeclareRoles({"USER","ADMIN"})
 public class CountryResource {
 
     CountryDAO cdao = new CountryDAO();
@@ -34,6 +37,7 @@ public class CountryResource {
     };
 
     @GET
+    @RolesAllowed({"USER","ADMIN"})
     @Consumes({"application/json"})
     @Produces({"application/json"})
     public Response read(@QueryParam("id") String id) {
@@ -51,10 +55,13 @@ public class CountryResource {
                 return Response.status(200).entity(entity).build();
             }
             return Response.status(400).entity(String.format("Error: No valid ID provided.")).build();
+        } catch (NullPointerException npe) {
+            return Response.status(200).entity(entity).build();
         }
     }
 
     @POST
+    @RolesAllowed({"USER","ADMIN"})
     @Consumes({"application/xml", "application/json"})
     public Response save(Country c) {
         if (cdao.create(c)) {
@@ -65,6 +72,7 @@ public class CountryResource {
     }
 
     @PUT
+    @RolesAllowed("ADMIN")
     @Consumes({"application/xml", "application/json"})
     public Response update(Country c) {
         if (cdao.read(c.getId()) != null) {
@@ -79,6 +87,7 @@ public class CountryResource {
     }
 
     @DELETE
+    @RolesAllowed("ADMIN")
     @Consumes({"application/xml", "application/json"})
     public Response delete(@QueryParam("id") String id) {
         try {
